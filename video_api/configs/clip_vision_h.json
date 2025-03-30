@@ -1,0 +1,10 @@
+{
+    "num_hidden_layers": 32,
+    "hidden_size": 1280,
+    "num_attention_heads": 16,
+    "intermediate_size": 5120,
+    "num_channels": 3,
+    "patch_size": 14,
+    "image_size": 224,
+    "projection_dim": 1024
+}
