@@ -3,8 +3,6 @@ import re
 import torch
 import sentencepiece
 
-from transformers import CLIPTokenizer
-
 #%%
 def parse_parentheses(string):
     result = []

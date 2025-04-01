@@ -1,9 +1,8 @@
 
-import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from einops import repeat, rearrange
+from einops import rearrange
 
 from video_api.utils.attention_utils import attention_xformers_vae
 from video_api.gguf_loader.ops import ops
