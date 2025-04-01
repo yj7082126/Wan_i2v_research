@@ -139,7 +139,17 @@ class CFGGuider:
         self.device = device
         self.dtype = dtype
 
-    def set_sigmas(self, steps, shift,low_stop, high_stop):
+        self.low_stop = 0
+        self.high_stop = 100
+        self.sigmas = []
+        self.positive_conds = None
+        self.negative_conds = None
+        self.cfg = 1.0
+
+    def set_sigmas(self, steps, shift, low_stop, high_stop):
+        self.low_stop = low_stop
+        self.high_stop = high_stop
+
         self.unet.model_sampling.set_parameters(shift=shift)
         self.sigmas = simple_scheduler(steps, self.unet.model_sampling.sigmas).to(self.device)
         self.sigmas = self.sigmas[low_stop:high_stop + 1]
@@ -163,6 +173,9 @@ class CFGGuider:
         return output
     
     def sample(self, sampler_name, latent, positive_conds, negative_conds, cfg, seed):
+        if self.low_stop == self.high_stop:
+            return latent, latent
+        
         self.positive_conds = positive_conds
         self.negative_conds = negative_conds
         self.cfg = cfg
@@ -174,7 +187,7 @@ class CFGGuider:
         extra_args = {"model_options": {'sample_sigmas' : self.sigmas}, "seed": seed}
 
         noise = self.unet.model_sampling.noise_scaling(self.sigmas[0], noise, latent_image)
-        x0_output = {}
+        x0_output = {'x0' : latent}
         def callback(x):
             if self.debug_output:
                 print(x)
