@@ -1,4 +1,5 @@
 import numpy as np
+from PIL import Image
 import torch
 import torch.nn.functional as F
 import torchvision
@@ -53,6 +54,18 @@ def decode_tiled(vae, samples, tile_size, overlap=64, temporal_size=64, temporal
         images = images.reshape(-1, images.shape[-3], images.shape[-2], images.shape[-1])
     return images
 
+def to_img(tensor, normalize=False, value_range=(-1,1)):
+    assert len(tensor.shape) == 4
+    tensor = tensor[None]
+    if normalize:
+        tensor = tensor.clap(value_range[0], value_range[1])
+    tmp = [
+        torchvision.utils.make_grid(u, nrow=1, normalize=normalize, value_range=value_range) 
+        for u in tensor.unbind(1)
+    ]
+    tmp = (torch.stack(tmp, dim=0) * 255.).type(torch.uint8).cpu()
+    tmp = [Image.fromarray(x) for x in tmp.numpy()]
+    return tmp
 
 def save_video(tensor, save_path=None, fps=16, normalize=False, value_range=(-1,1)):
     assert len(tensor.shape) == 4
