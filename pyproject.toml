@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "wan-i2v-research"
+version = "0.1.0"
+description = "Code repository for WAN 2.1 video generative models for research/API development purposes."
+authors = ["Patrick Kwon <yj7082126@naver.com>"]
+readme = "README.md"
+packages = [
+    {include = "video_api"},
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+setuptools = "^60.2.0"
+wheel = "^0.41.2"
+torch = {url = "https://download.pytorch.org/whl/cu121/torch-2.5.1%2Bcu121-cp311-cp311-linux_x86_64.whl"}
+torchvision = {url = "https://download.pytorch.org/whl/cu121/torchvision-0.20.1%2Bcu121-cp311-cp311-linux_x86_64.whl"}
+numpy = "^1.24.2"
+tqdm = "^4.67.1"
+pillow = "^9.4.0"
+imageio = "^2.33.1"
+scikit-image = "^0.21.0"
+scipy = "^1.11.4"
+einops = "^0.8.0"
+safetensors = "^0.4.5"
+gguf = "^0.13.0"
+transformers = "^4.49.0"
+sentencepiece = "^0.1.99"
+torchdiffeq = "^0.2.3"
+torchsde = "^0.2.6"
+xformers = "0.0.29.post1"
+sageattention = { git = "https://github.com/thu-ml/SageAttention.git", tag = "v2.0.1"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
