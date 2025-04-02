@@ -120,5 +120,5 @@ class WanI2V_Service(
         result = WanI2V_Output([to_img(x) for x in result])
         return result
     
-    def close(self):
-        return super().close()
+    def __del__(self):
+        return super().__del__()

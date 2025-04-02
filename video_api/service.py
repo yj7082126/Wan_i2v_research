@@ -38,7 +38,6 @@ class InferenceService(Protocol[ConfigType, InputType, OutputType]):
         """
         raise NotImplementedError("__call__ method must be implemented")
 
-    @abstractmethod
     def __del__(self):
         """
         서비스 언로드시 호출되는 함수.
