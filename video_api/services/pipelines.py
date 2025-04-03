@@ -2,7 +2,10 @@ from pathlib import Path
 import numpy as np
 import json
 from PIL import Image
+import hashlib
+import re
 import torch
+from transformers import AutoModelForCausalLM, AutoProcessor, set_seed
 
 from video_api.gguf_loader.loader import gguf_sd_loader
 from video_api.models.ldm.wan import WanModelI2V
@@ -199,3 +202,39 @@ class CFGGuider:
         samples = self.latent_format.process_out(samples.to(torch.float32))
         denoised = self.latent_format.process_out(x0_output['x0'])
         return samples, denoised
+    
+
+
+class FlorenceModelCaptioner:
+    def __init__(self, model_path, device='cuda:0'):
+        self.device = device
+
+        self.model = AutoModelForCausalLM.from_pretrained(
+            model_path, attn_implementation='sdpa', device_map=device, 
+            torch_dtype=torch.float16, trust_remote_code=True).to(device)
+        self.processor = AutoProcessor.from_pretrained(model_path, trust_remote_code=True)
+
+        self.words_to_replace = ['photo', 'image', 'picture', 'illustration', 'drawing']
+        self.replacement_word = 'video'
+
+    @torch.no_grad()
+    def __call__(self, source, seed):
+        hash_object = hashlib.sha256(str(seed).encode('utf-8'))
+        hashed_seed = int(hash_object.hexdigest(), 16) % (2**32)
+        set_seed(hashed_seed)
+
+        inputs = self.processor(
+            text='<MORE_DETAILED_CAPTION>', images=source, return_tensors="pt", do_rescale=False
+        ).to(torch.float16).to(self.device)
+
+        generated_ids = self.model.generate(
+            input_ids=inputs["input_ids"], pixel_values=inputs["pixel_values"],
+            max_new_tokens=1024, do_sample=True, num_beams=5,
+        )
+
+        results = self.processor.batch_decode(generated_ids, skip_special_tokens=False)[0]
+        clean_results = str(results).replace('</s>', '').replace('<s>', '')
+
+        pattern = r'\b(?:' + '|'.join(map(re.escape, self.words_to_replace)) + r')\b'
+        clean_results = re.sub(pattern, self.replacement_word, clean_results, flags=re.IGNORECASE)
+        return clean_results
