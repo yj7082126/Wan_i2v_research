@@ -53,6 +53,7 @@ egs/*
 # personal notebooks & scripts
 notebooks/
 outputs/
+models/
 
 **.pyc
 poetry.lock

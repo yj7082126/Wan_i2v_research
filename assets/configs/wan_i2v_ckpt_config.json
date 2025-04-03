@@ -1,0 +1,10 @@
+{
+    "unet_path": "models/diffusion_models/wan2.1-i2v-14b-480p-Q4_K_M.gguf",
+    "unet_config_path": "video_api/configs/wan2.1-i2v-14b-480p-Q4_K_M.json",
+    "textmodel_path": "models/clip/umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+    "textmodel_config_path": "video_api/configs/umt5_config_xxl.json",
+    "clip_vision_path": "models/clip_vision/clip_vision_h.safetensors",
+    "clip_vision_config_path": "video_api/configs/clip_vision_h.json",
+    "vae_path": "models/vae/wan_2.1_vae.safetensors",
+    "vae_config_path": "video_api/configs/wan_2.1_vae.json"
+}
