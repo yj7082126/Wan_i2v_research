@@ -1,13 +1,16 @@
 import torch
 import safetensors
+from video_api.gguf_loader.loader import gguf_sd_loader
 
 #%%
 
-def load_torch_file(ckpt, device=None, return_metadata=False):
+def load_torch_file(ckpt, device=None):
     if device is None:
         device = torch.device("cpu")
 
-    if ckpt.lower().endswith(".safetensors") or ckpt.lower().endswith(".sft"):
+    if ckpt.lower().endswith(".gguf"):
+        sd = gguf_sd_loader(ckpt)
+    elif ckpt.lower().endswith(".safetensors") or ckpt.lower().endswith(".sft"):
         try:
             with safetensors.safe_open(ckpt, framework="pt", device=device.type) as f:
                 sd = {}

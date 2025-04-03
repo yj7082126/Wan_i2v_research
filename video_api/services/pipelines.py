@@ -7,7 +7,6 @@ import re
 import torch
 from transformers import AutoModelForCausalLM, AutoProcessor, set_seed
 
-from video_api.gguf_loader.loader import gguf_sd_loader
 from video_api.models.ldm.wan import WanModelI2V
 from video_api.models.ldm.vae import WanVAE, encode_crop_pixels
 from video_api.models.text_encoder.tokenizer import SPieceTokenizer, SDTokenizer
@@ -27,7 +26,8 @@ class WanUNet:
         self.dtype = dtype
 
         unet_config = json.loads(Path(unet_config_path).read_bytes())
-        sd = gguf_sd_loader(unet_path)
+
+        sd = load_torch_file(unet_path)
         self.unet = WanModelI2V(device=device, dtype=dtype, **unet_config).eval().to(device)
         m, u = self.unet.load_state_dict(sd, strict=False)
         del sd
