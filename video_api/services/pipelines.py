@@ -7,6 +7,7 @@ import re
 import torch
 from transformers import AutoModelForCausalLM, AutoProcessor, set_seed
 
+from video_api.gguf_loader.dequant import is_quantized
 from video_api.models.ldm.wan import WanModelI2V
 from video_api.models.ldm.vae import WanVAE, encode_crop_pixels
 from video_api.models.text_encoder.tokenizer import SPieceTokenizer, SDTokenizer
@@ -14,8 +15,9 @@ from video_api.models.text_encoder.clip_vision import CLIPVisionModelProjection,
 from video_api.models.text_encoder.wan import SDClipModel, T5
 from video_api.sampling.k_diffusion import sampling as k_diffusion_sampling
 from video_api.sampling.model_sampling import ModelSamplingAdvanced, simple_scheduler
-from video_api.utils.file_utils import load_torch_file
+from video_api.utils.file_utils import load_torch_file, get_attr, set_attr
 from video_api.utils.latent_utils import Wan21_latent
+from video_api.utils.lora_utils import fix_musubi, model_lora_keys_unet_wan, load_lora, calculate_weight
 from video_api.utils.sample_utils import prepare_noise
 
 
@@ -33,6 +35,29 @@ class WanUNet:
         del sd
 
         self.model_sampling = ModelSamplingAdvanced()
+
+    def load_lora(self, lora_path, strength=1.0):
+        lora = load_torch_file(lora_path)
+        lora = fix_musubi(lora)
+        key_map = model_lora_keys_unet_wan(self.unet, {})
+        loaded = load_lora(lora, key_map)
+
+        model_sd = self.unet.state_dict()
+        p = set()
+        patches = {}
+        for key in loaded:
+            if key in model_sd:
+                p.add(key)
+                current_patches = patches.get(key, [])
+                current_patches.append((strength, loaded[key]))
+                patches[key] = current_patches
+
+        for key, patch in patches.items():
+            weight = get_attr(self.unet, key)
+            if is_quantized(weight):
+                out_weight = weight.to(self.device)
+                out_weight.patches = [(calculate_weight, patch, key)]
+            set_attr(self.unet, key, torch.nn.Parameter(out_weight, requires_grad=False))
 
     def __call__(self, input_x, sigma, c_concat, c_crossattn, clip_fea):
         xc = self.model_sampling.calculate_input(sigma, input_x)

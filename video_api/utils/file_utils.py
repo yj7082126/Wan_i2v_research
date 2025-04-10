@@ -45,3 +45,17 @@ def calculate_parameters(sd, prefix=""):
             w = sd[k]
             params += w.nelement()
     return params
+
+def get_attr(obj, attr: str):
+    attrs = attr.split(".")
+    for name in attrs:
+        obj = getattr(obj, name)
+    return obj
+
+def set_attr(obj, attr, value):
+    attrs = attr.split(".")
+    for name in attrs[:-1]:
+        obj = getattr(obj, name)
+    prev = getattr(obj, attrs[-1])
+    setattr(obj, attrs[-1], value)
+    return prev

@@ -2,6 +2,7 @@ import torch
 
 
 def cast_to(weight, dtype=None, device=None, non_blocking=False, copy=False):
+    # print(dtype, device, non_blocking, copy)
     if device is None or weight.device == device:
         if not copy:
             if dtype is None or weight.dtype == dtype:
